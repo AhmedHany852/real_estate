@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Apartment;
 use App\Models\Expense;
 use App\Models\Rent;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -14,6 +15,7 @@ class ApartmentController extends Controller
 {
     public function index(Request $request)
     {
+<<<<<<< HEAD
         $apartments = Apartment::with('rents','expenses')->paginate($request->get('per_page', 50));
         
         foreach ($apartments as $apartment) {
@@ -32,6 +34,11 @@ class ApartmentController extends Controller
             $apartment->total_amount = $total_amount;
         }
     
+=======
+        $user = Auth::user();
+        $apartments = Apartment::where('owner_id', $user->id)->paginate($request->get('per_page', 50));
+
+>>>>>>> 9533a22e8e994c1603aceb5cbe7ab58309e7c378
         return response()->json($apartments, 200);
     }
     
@@ -61,7 +68,7 @@ class ApartmentController extends Controller
         $apartment = Apartment::create([
             'apartment_name' =>$request->apartment_name ,
             'apartment_number' =>$request-> apartment_number,
-            'owner_id' => $request->owner_id,
+            'owner_id' => Auth::user()->id,
             'apartment_address' =>$request->apartment_address ,
             'owner_phone' =>$request->owner_phone ,
             'photo' =>$photo,
@@ -103,7 +110,7 @@ class ApartmentController extends Controller
         $apartment->update([
             'apartment_name' =>$request->apartment_name ,
             'apartment_number' =>$request->apartment_number,
-            'owner_id' => $request->owner_id,
+            'owner_id' => Auth::user()->id,
             'apartment_address' =>$request->apartment_address ,
             'owner_phone' =>$request->owner_phone,
             'photo' =>$photo,
@@ -116,22 +123,22 @@ class ApartmentController extends Controller
     {
         try {
             $apartment = Apartment::findOrFail($id);
-    
+
             // Delete personal photo if it exists
             if ($apartment->apartment_photo) {
                 // Assuming 'personal_photo' is the attribute storing the file name
                 $photoPath = 'uploads/apartment_photo/' . $apartment->apartment_photo;
-    
+
                 // Delete photo from storage
                 Storage::delete($photoPath);
             }
-    
+
             $apartment->delete();
-    
+
             return response()->json(['message' => 'تمت عملية الحذف بنجاح'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'حدث خطأ أثناء محاولة حذف الشقة'], 400);
         }
     }
-    
+
 }
