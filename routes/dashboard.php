@@ -56,7 +56,7 @@ Route::post('expenses/{id}', [ExpenseController::class, 'update']);
 Route::delete('expenses/{id}', [ExpenseController::class, 'destroy']);
 
 //rents
-Route::get('rents', [RentContro1ller::class, 'index']);
+Route::get('rents', [RentController::class, 'index']);
 Route::post('rents', [RentController::class, 'store']);
 Route::get('rents/{id}', [RentController::class, 'show']);
 Route::post('rents/{id}', [RentController::class, 'update']);

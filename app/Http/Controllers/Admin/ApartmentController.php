@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Apartment;
+use App\Models\Expense;
+use App\Models\Rent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -12,9 +14,27 @@ class ApartmentController extends Controller
 {
     public function index(Request $request)
     {
-        $apartments = Apartment::paginate($request->get('per_page', 50));
+        $apartments = Apartment::with('rents','expenses')->paginate($request->get('per_page', 50));
+        
+        foreach ($apartments as $apartment) {
+            $expense_amount = Expense::where('apartment_id', $apartment->id)->value('amount');
+            $rent_amount = Rent::where('apartment_id', $apartment->id)->value('amount');
+    
+            // Initialize total amount with rent amount
+            $total_amount = $rent_amount;
+    
+            // If there's an expense amount, subtract it from the total amount
+            if ($expense_amount) {
+                $total_amount -= $expense_amount;
+            }
+    
+            // Assign the calculated total amount to the apartment object
+            $apartment->total_amount = $total_amount;
+        }
+    
         return response()->json($apartments, 200);
     }
+    
 
     public function store(Request $request)
     {

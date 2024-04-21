@@ -17,4 +17,12 @@ class Apartment extends Model
         'owner_phone',
         'total_amount'
     ];
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
+    public function rents()
+    {
+        return $this->hasMany(Rent::class);
+    }
 }

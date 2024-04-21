@@ -14,22 +14,12 @@ class ExpenseController extends Controller
         $expenses = Expense::paginate($request->get('per_page', 50));
         return response()->json($expenses, 200);
     }
-//     public function index(Request $request)
-// {
-//     // Retrieve all expenses along with the sum of expenses for each apartment
-//     $expenses = Expense::select('expenses.*', 'apartments.apartment_name')
-//                        ->leftJoin('apartments', 'expenses.apartment_id', '=', 'apartments.id')
-//                        ->selectRaw('expenses.apartment_id, sum(expenses.amount) as total_amount')
-//                        ->groupBy('expenses.apartment_id', 'apartments.apartment_name')
-//                        ->paginate($request->get('per_page', 50));
-
-//     return response()->json($expenses, 200);
-// }
+    
 
     
 
 
-    public function store(Request $request)
+    public function store(Request $request  )
     {
         $validator = Validator::make($request->all(), [
             'apartment_id' => 'required|exists:apartments,id',
