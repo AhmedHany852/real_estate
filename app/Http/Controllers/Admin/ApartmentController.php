@@ -15,28 +15,35 @@ class ApartmentController extends Controller
 {
     public function index(Request $request)
     {
-        $apartments = Apartment::with('rents','expenses')->paginate($request->get('per_page', 50));
+        $user = Auth::guard('users')->user();
+        $apartments = Apartment::with('rents', 'expenses')->where('owner_id', $user->id)->paginate($request->get('per_page', 50));
+
+        $total_total_amount = 0;
+        $total_expense_amount = 0;
+        $total_rent_amount = 0;
 
         foreach ($apartments as $apartment) {
             $expense_amount = Expense::where('apartment_id', $apartment->id)->value('amount');
             $rent_amount = Rent::where('apartment_id', $apartment->id)->value('amount');
-
-            // Initialize total amount with rent amount
             $total_amount = $rent_amount;
-
-            // If there's an expense amount, subtract it from the total amount
             if ($expense_amount) {
                 $total_amount -= $expense_amount;
             }
-
-            // Assign the calculated total amount to the apartment object
             $apartment->total_amount = $total_amount;
+
+            $total_total_amount += $total_amount;
+            $total_expense_amount += $expense_amount ?? 0;
+            $total_rent_amount += $rent_amount ?? 0;
         }
 
-        $user = Auth::user();
-        $apartments = Apartment::where('owner_id', $user->id)->paginate($request->get('per_page', 50));
+        $data = [
+            'apartments' => $apartments,
+            'total_total_amount' => $total_total_amount,
+            'total_expense_amount' => $total_expense_amount,
+            'total_rent_amount' => $total_rent_amount,
+        ];
 
-        return response()->json($apartments, 200);
+        return response()->json($data, 200);
     }
 
 
