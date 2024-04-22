@@ -15,33 +15,37 @@ class ApartmentController extends Controller
 {
     public function index(Request $request)
     {
-<<<<<<< HEAD
-        $apartments = Apartment::with('rents','expenses')->paginate($request->get('per_page', 50));
-        
+        $user = Auth::user();
+        $apartments = Apartment::with('rents', 'expenses')->where('owner_id', $user->id)->paginate($request->get('per_page', 50));
+
+        $total_total_amount = 0;
+        $total_expense_amount = 0;
+        $total_rent_amount = 0;
+
         foreach ($apartments as $apartment) {
             $expense_amount = Expense::where('apartment_id', $apartment->id)->value('amount');
             $rent_amount = Rent::where('apartment_id', $apartment->id)->value('amount');
-    
-            // Initialize total amount with rent amount
             $total_amount = $rent_amount;
-    
-            // If there's an expense amount, subtract it from the total amount
             if ($expense_amount) {
                 $total_amount -= $expense_amount;
             }
-    
-            // Assign the calculated total amount to the apartment object
             $apartment->total_amount = $total_amount;
-        }
-    
-=======
-        $user = Auth::user();
-        $apartments = Apartment::where('owner_id', $user->id)->paginate($request->get('per_page', 50));
 
->>>>>>> 9533a22e8e994c1603aceb5cbe7ab58309e7c378
-        return response()->json($apartments, 200);
+            $total_total_amount += $total_amount;
+            $total_expense_amount += $expense_amount ?? 0;
+            $total_rent_amount += $rent_amount ?? 0;
+        }
+
+        $data = [
+            'apartments' => $apartments,
+            'total_total_amount' => $total_total_amount,
+            'total_expense_amount' => $total_expense_amount,
+            'total_rent_amount' => $total_rent_amount,
+        ];
+
+        return response()->json($data, 200);
     }
-    
+
 
     public function store(Request $request)
     {
@@ -66,12 +70,12 @@ class ApartmentController extends Controller
         }
 
         $apartment = Apartment::create([
-            'apartment_name' =>$request->apartment_name ,
-            'apartment_number' =>$request-> apartment_number,
+            'apartment_name' => $request->apartment_name,
+            'apartment_number' => $request->apartment_number,
             'owner_id' => Auth::user()->id,
-            'apartment_address' =>$request->apartment_address ,
-            'owner_phone' =>$request->owner_phone ,
-            'photo' =>$photo,
+            'apartment_address' => $request->apartment_address,
+            'owner_phone' => $request->owner_phone,
+            'photo' => $photo,
         ]);
 
         return response()->json($apartment, 200);
@@ -80,7 +84,7 @@ class ApartmentController extends Controller
     public function show($id)
     {
         $apartment = Apartment::findOrFail($id);
-        return response()->json($apartment , 200);
+        return response()->json($apartment, 200);
     }
 
     public function update(Request $request, $id)
@@ -108,12 +112,12 @@ class ApartmentController extends Controller
         }
 
         $apartment->update([
-            'apartment_name' =>$request->apartment_name ,
-            'apartment_number' =>$request->apartment_number,
+            'apartment_name' => $request->apartment_name,
+            'apartment_number' => $request->apartment_number,
             'owner_id' => Auth::user()->id,
-            'apartment_address' =>$request->apartment_address ,
-            'owner_phone' =>$request->owner_phone,
-            'photo' =>$photo,
+            'apartment_address' => $request->apartment_address,
+            'owner_phone' => $request->owner_phone,
+            'photo' => $photo,
         ]);
 
         return response()->json($apartment, 200);
@@ -140,5 +144,4 @@ class ApartmentController extends Controller
             return response()->json(['message' => 'حدث خطأ أثناء محاولة حذف الشقة'], 400);
         }
     }
-
 }

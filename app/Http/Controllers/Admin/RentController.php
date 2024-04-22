@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Rent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -14,6 +15,11 @@ class RentController extends Controller
     {
         $rents = Rent::paginate($request->get('per_page', 50));
         return response()->json($rents, 200);
+        //  $rents = Rent::with('apartment')
+        // ->select('rents.*', DB::raw('SUM(amount) as sum'))
+        // ->groupBy('apartment_id')
+        // ->paginate($request->get('per_page', 50));
+        // return response()->json($rents, 200);
     }
 
     public function store(Request $request)
@@ -22,7 +28,7 @@ class RentController extends Controller
             'apartment_id' => 'required|exists:apartments,id',
             'amount' => 'required',
             'description' => 'nullable',
-            
+
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -32,7 +38,7 @@ class RentController extends Controller
         $rents = Rent::create([
             'description' =>$request->description ,
             'amount' =>$request-> amount,
-            'apartment_id' => $request->apartment_id,           
+            'apartment_id' => $request->apartment_id,
         ]);
 
         return response()->json($rents, 200);
@@ -58,12 +64,12 @@ class RentController extends Controller
                 'message' => $validator->errors(),
             ], 400);
         }
-      
+
 
         $rents->update([
             'description' =>$request->description ,
             'amount' =>$request-> description,
-            'apartment_id' => $request->description, 
+            'apartment_id' => $request->description,
         ]);
 
         return response()->json($rents, 200);
@@ -74,12 +80,12 @@ class RentController extends Controller
         try {
             $rents = Rent::findOrFail($id);
             $rents->delete();
-    
+
             return response()->json(['message' => 'تمت عملية الحذف بنجاح'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'حدث خطأ أثناء محاولة الحذف '], 400);
         }
     }
-    
+
 }
 
