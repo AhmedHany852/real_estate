@@ -2,21 +2,26 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
 class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
-        $expenses = Expense::paginate($request->get('per_page', 50));
+
+        $expenses = Expense::with('apartment')
+        ->select('expenses.*', DB::raw('SUM(amount) as sum'))
+        ->groupBy('apartment_id')
+        ->paginate($request->get('per_page', 50));
         return response()->json($expenses, 200);
     }
-    
 
-    
+
+
 
 
     public function store(Request $request  )
@@ -25,7 +30,7 @@ class ExpenseController extends Controller
             'apartment_id' => 'required|exists:apartments,id',
             'amount' => 'required',
             'description' => 'nullable',
-            
+
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -35,7 +40,7 @@ class ExpenseController extends Controller
         $expenses = Expense::create([
             'description' =>$request->description ,
             'amount' =>$request-> amount,
-            'apartment_id' => $request->apartment_id,           
+            'apartment_id' => $request->apartment_id,
         ]);
 
         return response()->json($expenses, 200);
@@ -61,12 +66,12 @@ class ExpenseController extends Controller
                 'message' => $validator->errors(),
             ], 400);
         }
-      
+
 
         $expenses->update([
             'description' =>$request->description ,
             'amount' =>$request-> amount,
-            'apartment_id' => $request->apartment_id, 
+            'apartment_id' => $request->apartment_id,
         ]);
 
         return response()->json($expenses, 200);
@@ -77,11 +82,11 @@ class ExpenseController extends Controller
         try {
             $expenses = Expense::findOrFail($id);
             $expenses->delete();
-    
+
             return response()->json(['message' => 'تمت عملية الحذف بنجاح'], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'حدث خطأ أثناء محاولة الحذف '], 400);
         }
     }
-    
+
 }
