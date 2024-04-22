@@ -68,10 +68,7 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-        'app_users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\AppUsers::class,
-        ],
+
     ],
 
     /*
