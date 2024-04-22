@@ -15,33 +15,30 @@ class ApartmentController extends Controller
 {
     public function index(Request $request)
     {
-<<<<<<< HEAD
         $apartments = Apartment::with('rents','expenses')->paginate($request->get('per_page', 50));
-        
+
         foreach ($apartments as $apartment) {
             $expense_amount = Expense::where('apartment_id', $apartment->id)->value('amount');
             $rent_amount = Rent::where('apartment_id', $apartment->id)->value('amount');
-    
+
             // Initialize total amount with rent amount
             $total_amount = $rent_amount;
-    
+
             // If there's an expense amount, subtract it from the total amount
             if ($expense_amount) {
                 $total_amount -= $expense_amount;
             }
-    
+
             // Assign the calculated total amount to the apartment object
             $apartment->total_amount = $total_amount;
         }
-    
-=======
+
         $user = Auth::user();
         $apartments = Apartment::where('owner_id', $user->id)->paginate($request->get('per_page', 50));
 
->>>>>>> 9533a22e8e994c1603aceb5cbe7ab58309e7c378
         return response()->json($apartments, 200);
     }
-    
+
 
     public function store(Request $request)
     {
