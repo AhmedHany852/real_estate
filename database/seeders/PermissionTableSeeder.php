@@ -14,18 +14,33 @@ class PermissionTableSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-          
-            "users-list",
-            "update-user",
-            "delete-user",
-            "add-user",
-            "role",
-            "roles-list",
-            "update-role",
-            "delete-role",
-            "add-role",
-            "setting",
-            "update-or-create-setting",
+
+            // "users-list",
+            // "update-user",
+            // "delete-user",
+            // "add-user",
+            // "role",
+            // "roles-list",
+            // "update-role",
+            // "delete-role",
+            // "add-role",
+            // "setting",
+            // "update-or-create-setting",
+            "apartment",
+            "apartment-list",
+            "update-apartment",
+            "delete-apartment",
+            "add-apartment",
+            "expense",
+            "expense-list",
+            "update-expense",
+            "delete-expense",
+            "add-expense",
+            "rent",
+            "rent-list",
+            "update-rent",
+            "delete-rent",
+            "add-rent",
 
 
 
@@ -36,5 +51,5 @@ class PermissionTableSeeder extends Seeder
             Permission::create(['name' => $permission]);
         }
     }
-    
+
 }
