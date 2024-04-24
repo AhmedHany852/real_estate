@@ -2,29 +2,27 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Expense;
+use App\Models\Rent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
-class ExpenseController extends Controller
+class RentController extends Controller
 {
     public function index(Request $request)
     {
-
-        $expenses = Expense::with('apartment')
-        ->select('expenses.*', DB::raw('SUM(amount) as sum'))
-        ->groupBy('apartment_id')
+        $data = Rent::with('apartment')
+        ->select('rents.*', 'sums.sum')
+        ->join(DB::raw('(SELECT apartment_id, SUM(amount) as sum FROM rents GROUP BY apartment_id) as sums'), 'rents.apartment_id', '=', 'sums.apartment_id')
         ->paginate($request->get('per_page', 50));
-        return response()->json($expenses, 200);
+
+    return response()->json( $data, 200);
+
     }
 
-
-
-
-
-    public function store(Request $request  )
+    public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'apartment_id' => 'required|exists:apartments,id',
@@ -37,24 +35,24 @@ class ExpenseController extends Controller
                 'message' => $validator->errors(),
             ], 400);
         }
-        $expenses = Expense::create([
+        $rents = Rent::create([
             'description' =>$request->description ,
             'amount' =>$request-> amount,
             'apartment_id' => $request->apartment_id,
         ]);
 
-        return response()->json($expenses, 200);
+        return response()->json($rents, 200);
     }
 
     public function show($id)
     {
-        $expenses = Expense::findOrFail($id);
-        return response()->json($expenses , 200);
+        $rents = Rent::findOrFail($id);
+        return response()->json($rents , 200);
     }
 
     public function update(Request $request, $id)
     {
-        $expenses = Expense::findOrFail($id);
+        $rents = Rent::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'apartment_id' => 'required|exists:apartments,id',
@@ -68,20 +66,20 @@ class ExpenseController extends Controller
         }
 
 
-        $expenses->update([
+        $rents->update([
             'description' =>$request->description ,
-            'amount' =>$request-> amount,
-            'apartment_id' => $request->apartment_id,
+            'amount' =>$request-> description,
+            'apartment_id' => $request->description,
         ]);
 
-        return response()->json($expenses, 200);
+        return response()->json($rents, 200);
     }
 
     public function destroy($id)
     {
         try {
-            $expenses = Expense::findOrFail($id);
-            $expenses->delete();
+            $rents = Rent::findOrFail($id);
+            $rents->delete();
 
             return response()->json(['message' => 'تمت عملية الحذف بنجاح'], 200);
         } catch (\Exception $e) {
@@ -90,3 +88,4 @@ class ExpenseController extends Controller
     }
 
 }
+

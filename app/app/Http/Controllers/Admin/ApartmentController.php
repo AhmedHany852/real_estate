@@ -16,32 +16,31 @@ class ApartmentController extends Controller
     public function index(Request $request)
     {
         $user = Auth::guard('users')->user();
-        $apartments = Apartment::with('rents', 'expenses')->where('owner_id', $user->id)->paginate($request->get('per_page', 50));
+        $apartments = Apartment::with('rents', 'expenses')
+        ->where('owner_id', $user->id)
+        ->paginate($request->get('per_page', 50));
 
-        $total_total_amount = 0;
-        $total_expense_amount = 0;
-        $total_rent_amount = 0;
+    $total_total_amount = 0;
+    $total_expense_amount = 0;
+    $total_rent_amount = 0;
 
-        foreach ($apartments as $apartment) {
-            $expense_amount = Expense::where('apartment_id', $apartment->id)->value('amount');
-            $rent_amount = Rent::where('apartment_id', $apartment->id)->value('amount');
-            $total_amount = $rent_amount;
-            if ($expense_amount) {
-                $total_amount -= $expense_amount;
-            }
-            $apartment->total_amount = $total_amount;
+    foreach ($apartments as $apartment) {
+        $expense_amount = $apartment->expenses->sum('amount');
+        $rent_amount = $apartment->rents->sum('amount');
+        $total_amount = $rent_amount - $expense_amount;
+        $apartment->total_amount = $total_amount;
 
-            $total_total_amount += $total_amount;
-            $total_expense_amount += $expense_amount ?? 0;
-            $total_rent_amount += $rent_amount ?? 0;
-        }
+        $total_total_amount += $total_amount;
+        $total_expense_amount += $expense_amount;
+        $total_rent_amount += $rent_amount;
+    }
 
-        $data = [
-            'apartments' => $apartments,
-            'total_total_amount' => $total_total_amount,
-            'total_expense_amount' => $total_expense_amount,
-            'total_rent_amount' => $total_rent_amount,
-        ];
+    $data = [
+        'apartments' => $apartments,
+        'total_total_amount' => $total_total_amount,
+        'total_expense_amount' => $total_expense_amount,
+        'total_rent_amount' => $total_rent_amount,
+    ];
 
         return response()->json($data, 200);
     }
@@ -49,6 +48,7 @@ class ApartmentController extends Controller
 
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'apartment_name' => 'required',
             'apartment_number' => 'required',
@@ -73,7 +73,7 @@ class ApartmentController extends Controller
         $apartment = Apartment::create([
             'apartment_name' => $request->apartment_name,
             'apartment_number' => $request->apartment_number,
-            'owner_id' => Auth::guard('users')->user()->id,
+            'owner_id' => Auth::user()->id,
             'apartment_address' => $request->apartment_address,
             'owner_phone' => $request->owner_phone,
             'photo' => $photo,
