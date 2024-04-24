@@ -69,6 +69,7 @@ class ApartmentController extends Controller
             $photo = null;
         }
 
+
         $apartment = Apartment::create([
             'apartment_name' => $request->apartment_name,
             'apartment_number' => $request->apartment_number,
